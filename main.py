@@ -11,26 +11,32 @@ class ToDo:
         self.page.title = "ToDo App"
         self.main_page()
 
+    def task_container(self):
+        return ft.Container(
+            height=self.page.height * 0.8,
+            content=ft.Column(
+                control=[
+                    ft.Checkbox(label='Tarefa 1', value=True)]))
+
+
     def main_page(self):
         input_task = ft.TextField(hint_text = " Digite uma tarefa", expand = True)
 
         input_bar = ft.Row(
             controls = [
                 input_task,
-                ft.FloatingActionButton(icon = ft.icons.ADD)
-            ]
-        )
+                ft.FloatingActionButton(icon = ft.icons.ADD)])
         
         tabs = ft.Tabs(
             selected_index = 0,
             tabs = [
                 ft.Tab(text='Todos'),
                 ft.Tab(text='Em andamento'),
-                ft.Tab(text='Finalizados')
-            ]
-        )
-
-        self.page.add(input_bar, tabs)
+                ft.Tab(text='Finalizados')])
+        
+        
+        tasks = self.task_container()
+        self.page.add(input_bar, tabs, tasks)
 
 ft.app(target=ToDo)
 
