@@ -1,4 +1,4 @@
-import flet as ft # type: ignore
+import flet as ft
 import sqlite3
 
 class ToDo:
@@ -6,13 +6,14 @@ class ToDo:
         self.page = page
         self.page.bgcolor = ft.colors.WHITE
         self.page.window.width = 350
-        self.page.window_height = 350
-        self.page.window_resizable = False
-        self.page.window_always_on_top = True
+        self.page.window.height = 350
+        self.page.window.resizable = False
+        self.page.window.always_on_top = True
         self.page.title = "ToDo App"
         self.task = ''
         self.view = 'all'
         self.db_execute("CREATE TABLE IF NOT EXISTS tasks (name, status)")
+        self.results = self.db_execute("SELECT * FROM tasks")  # Inicializa self.results aqui
         self.main_page()
 
     def db_execute(self, query, params = []):
@@ -48,7 +49,6 @@ class ToDo:
                                 value = True if res[1]== 'complete' else False
                     ) for res in self.results if res
                 ],
-
             )
         )
     
@@ -67,7 +67,7 @@ class ToDo:
             input_task.value = ''
             self.results = self.db_execute("SELECT * FROM tasks")
             self.update_task_list()
-           
+            
     def update_task_list(self):
         tasks = self.tasks_container()
         self.page.controls.pop()
@@ -81,7 +81,7 @@ class ToDo:
         elif e.control.selected_index == 1:
             self.results = self.db_execute("SELECT * FROM tasks WHERE status = 'incomplete'")
             self.view = 'incomplete'
-        elif e.control.select_index == 2:
+        elif e.control.selected_index == 2:
             self.results = self.db_execute("SELECT * FROM tasks WHERE status = 'complete'")
             self.view = 'complete'
 
@@ -119,6 +119,3 @@ class ToDo:
         self.page.add(input_bar, tabs, tasks)
 
 ft.app(target=ToDo)
-
-
-        
