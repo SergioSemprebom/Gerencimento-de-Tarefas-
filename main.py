@@ -5,7 +5,7 @@ class ToDo:
     def __init__(self, page: ft.Page):
         self.page = page
         self.page.bgcolor = ft.colors.WHITE
-        self.page.window_widt = 350
+        self.page.window.width = 350
         self.page.window_height = 350
         self.page.window_resizable = False
         self.page.window_always_on_top = True
@@ -84,30 +84,26 @@ class ToDo:
         elif e.control.select_index == 2:
             self.results = self.db_execute("SELECT * FROM tasks WHERE status = 'complete'")
             self.view = 'complete'
+
         self.update_task_list()
 
-
-
-
     def main_page(self):
-        input_task = ft.TextField(hint_text = " Digite uma tarefa",
-                                   expand = True,
-                                   on_change=self.set_value
-                                )
+        input_task = ft.TextField(
+            hint_text = " Digite uma tarefa",
+            expand = True,
+            on_change=self.set_value
+        )
 
         input_bar = ft.Row(
-            controls = [
+            controls=[
                 input_task,
                 ft.FloatingActionButton(
                     icon = ft.icons.ADD,
-                    on_click = lambda _: self.db_execute(
-                        [input_task.value, False]
-                    )
-
+                    on_click = lambda e: self.add(e, input_task)
                 )
             ]
         )
-        
+
         tabs = ft.Tabs(
             selected_index = 0,
             on_change = self.tabs_changed,
