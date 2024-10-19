@@ -10,10 +10,12 @@ class ToDo:
         self.page.window_resizable = False
         self.page.window_always_on_top = True
         self.page.title = "ToDo App"
-        self.dbt_execute("CREATE TABLE IF NOT EXISTS tasks (name, status)")
+        self.task = ''
+        self.view = 'all'
+        self.db_execute("CREATE TABLE IF NOT EXISTS tasks (name, status)")
         self.main_page()
 
-    def dbt_execute(self, query, params = []):
+    def db_execute(self, query, params = []):
         with sqlite3.connect('database.db') as con:
             cur = con.cursor()
             cur.execute(query, params)
@@ -25,28 +27,28 @@ class ToDo:
         label = e.control.label
 
         if is_checked:
-            self.dbt_execute("UPDATE tasks SET status = 'complete' WHERE name = ?", params=[label])
+            self.db_execute("UPDATE tasks SET status = 'complete' WHERE name = ?", params=[label])
         else:
-            self.dbt_execute("UPDATE tasks SET status = 'incomplete' WHERE name = ?", params=[label])
+            self.db_execute("UPDATE tasks SET status = 'incomplete' WHERE name = ?", params=[label])
 
-
-        if self.vew == 'all':
-            self.results = self.dbt_execute("SELECT * FROM tasks")
+        if self.view == 'all':
+            self.results = self.db_execute("SELECT * FROM tasks")
         else:
-            self.results = self.dbt_execute("SELECT * FROM tasks WHERE status = ?", params=[self.view])
+            self.results = self.db_execute("SELECT * FROM tasks WHERE status = ?", params=[self.view])
         self.update_task_list()
 
 
-    def task_container(self):
+    def tasks_container(self):
         return ft.Container(
             height=self.page.height * 0.8,
             content = ft.Column(
                 controls = [
                     ft.Checkbox(label=res[0], 
-                                on_change = self.chacked
-                                value=True, == 'complete' else False)
-                    for res in self.results if res
-                ]
+                                on_change = self.checked,
+                                value = True if res[1]== 'complete' else False
+                    ) for res in self.results if res
+                ],
+
             )
         )
     
@@ -61,24 +63,26 @@ class ToDo:
         status = 'incomplete'
 
         if name:
-            self.dbt_execute("INSERT INTO tasks VALUES (?, ?)",params=[name, status])
+            self.db_execute("INSERT INTO tasks VALUES (?, ?)",params=[name, status])
             input_task.value = ''
-            self.results = self.dbt_execute("SELECT * FROM tasks")
+            self.results = self.db_execute("SELECT * FROM tasks")
             self.update_task_list()
            
     def update_task_list(self):
-        self.tasks_container()
-
+        tasks = self.tasks_container()
+        self.page.controls.pop()
+        self.page.add(tasks)
+        self.page.update()
 
     def tabs_changed(self, e):
         if e.control.selected_index == 0:
-            self.results = self.dbt_execute("SELECT * FROM tasks")
+            self.results = self.db_execute("SELECT * FROM tasks")
             self.view = 'all'
         elif e.control.selected_index == 1:
-            self.results.db_execute("SELECT * FROM tasks WHERE status = 'incomplete'")
+            self.results = self.db_execute("SELECT * FROM tasks WHERE status = 'incomplete'")
             self.view = 'incomplete'
         elif e.control.select_index == 2:
-            self.results = self.dbt_execute("SELECT * FROM tasks WHERE status = 'complete'")
+            self.results = self.db_execute("SELECT * FROM tasks WHERE status = 'complete'")
             self.view = 'complete'
         self.update_task_list()
 
@@ -96,7 +100,7 @@ class ToDo:
                 input_task,
                 ft.FloatingActionButton(
                     icon = ft.icons.ADD,
-                    on_click = lambda _: self.dbt_execute(
+                    on_click = lambda _: self.db_execute(
                         [input_task.value, False]
                     )
 
@@ -114,7 +118,7 @@ class ToDo:
             ]
         )
         
-        tasks = self.task_container()
+        tasks = self.tasks_container()
 
         self.page.add(input_bar, tabs, tasks)
 
